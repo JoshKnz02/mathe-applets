@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Verknüpfungen zuordnen</title>
+<title>Verknüpfungen und Additionssatz</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #f4f6f9; color: #14202e; font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -12,6 +12,7 @@
   header { padding-top: 14px; }
   h1 { font-size: 1.3rem; margin: 0 0 4px; }
   header p { margin: 4px 0; }
+  .beispiel { background: #fff; border: 1px solid #cfd8e3; border-radius: 8px; padding: 8px 12px; margin: 8px 0 !important; font-size: .95rem; }
   .leiste { position: sticky; top: 0; z-index: 2; background: #f4f6f9; border-bottom: 1px solid #cfd8e3; padding: 8px 0; }
   .karten[hidden] { display: none; }
   .karten { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
@@ -29,23 +30,54 @@
   .bild svg { width: 100%; height: auto; display: block; }
   .bild.nein { outline: 4px dashed #14202e; outline-offset: -2px; }
   .ablage { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 34px; margin-top: 5px; }
-  .treffer { font: 600 1rem/1.2 Cambria, "Times New Roman", serif; border: 3px solid; border-radius: 6px; padding: 3px 7px; white-space: nowrap; }
-  button:focus-visible { outline: 3px solid #e69f00; outline-offset: 2px; }
+  .treffer { display: flex; flex-direction: column; align-items: center; font: 600 1rem/1.2 Cambria, "Times New Roman", serif; border: 3px solid; border-radius: 6px; padding: 3px 7px; white-space: nowrap; max-width: 100%; }
+  .treffer .menge { font-size: .9rem; font-weight: 600; }
+  button:focus-visible, input:focus-visible { outline: 3px solid #e69f00; outline-offset: 2px; }
   .fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 14px 0; }
   .neu { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid #0b57a4; background: #fff; color: #0b57a4; cursor: pointer; }
   .ende { background: #fff; border: 2px solid #0a6b3d; border-radius: 10px; padding: 12px 14px; margin-bottom: 24px; }
   .ende h2 { font-size: 1.1rem; margin: 0 0 6px; }
   .formel { font: 600 1.15rem/2 Cambria, "Times New Roman", serif; margin: 4px 0; }
+
+  /* Teil 2: Additionssatz */
+  .teil2 { background: #fff; border: 2px solid #0b57a4; border-radius: 10px; padding: 12px 14px; margin-bottom: 24px; }
+  .teil2 h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  .teil2 h3 { font-size: 1rem; margin: 18px 0 4px; }
+  .teil2 p { margin: 6px 0; }
+  .teil2 .status { min-height: 1.5em; }
+  .venn2 { max-width: 360px; margin: 8px auto; border: 2px solid #cfd8e3; border-radius: 10px; padding: 6px; background: #fff; }
+  .venn2 svg { width: 100%; height: auto; display: block; }
+  .zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 0; border-top: 1px solid #e1e7ee; }
+  .wl { font: 600 1.1rem/1.2 Cambria, "Times New Roman", serif; min-width: 6rem; }
+  .bruch { display: inline-flex; flex-direction: column; align-items: center; }
+  .bruch input { width: 3.6rem; height: 42px; text-align: center; font: 600 1.1rem Cambria, "Times New Roman", serif; border: 2px solid #9fb2ca; border-radius: 6px; background: #fff; color: inherit; padding: 0; }
+  .bruch input:disabled { background: #e8eef5; color: #14202e; border-color: #0a6b3d; }
+  .strich { width: 3.6rem; height: 2px; background: #14202e; margin: 3px 0; }
+  .pruef { font: inherit; padding: 10px 14px; min-height: 44px; border-radius: 8px; border: 1px solid #0b57a4; background: #fff; color: #0b57a4; cursor: pointer; touch-action: manipulation; }
+  .pruef:disabled { border-color: #9fb2ca; color: #5b6b7e; cursor: default; }
+  .rz { flex: 1 1 100%; font-size: .93rem; min-height: 1.3em; }
+  .rz.gut { color: #0a6b3d; font-weight: 600; }
+  .rz.falsch { color: #a33a00; font-weight: 600; }
+  .elemente { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .elem, .op { width: 48px; height: 48px; font: 700 1.2rem Cambria, "Times New Roman", serif; background: #fff; color: inherit; border: 2px solid #9fb2ca; border-radius: 8px; cursor: pointer; padding: 0; touch-action: manipulation; }
+  .op { font-size: 1.5rem; }
+  .elem[aria-pressed="true"] { background: #14202e; border-color: #14202e; color: #fff; }
+  .elem:disabled, .op:disabled { cursor: default; }
+  .op.gewaehlt { background: #14202e; border-color: #14202e; color: #fff; }
+  .opwahl { display: inline-flex; gap: 6px; margin: 0 4px; vertical-align: middle; }
+  .satz { border: 2px solid #0a6b3d; border-radius: 10px; padding: 12px 14px; margin-top: 16px; background: #fff; }
+  .satz h3 { margin-top: 0 !important; }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>Verknüpfungen von Ereignissen</h1>
+    <h1>Verknüpfungen von Ereignissen und Additionssatz</h1>
+    <p class="beispiel"><b>Beispiel:</b> Ein Würfel wird einmal geworfen und die Augenzahl notiert. Ereignis A: „Die Augenzahl ist kleiner als 4.“ Ereignis B: „Die Augenzahl ist eine ungerade Zahl.“ Die Zahlen in den Schaubildern sind die Augenzahlen.</p>
     <p>Tippen Sie zuerst einen <b>Ausdruck</b> an, dann das passende <b>Schaubild</b>. Zu manchen Schaubildern passt mehr als ein Ausdruck.</p>
   </header>
 </main>
-<div class="leiste"><div>
+<div class="leiste" id="leiste"><div>
   <div class="karten" id="karten" role="group" aria-label="Ausdrücke"></div>
   <p class="status" id="status" aria-live="polite"></p>
 </div></div>
@@ -55,10 +87,46 @@
   <section class="ende" id="ende" hidden>
     <h2>Alles richtig zugeordnet</h2>
     <p id="bilanz"></p>
+    <p><b>Tipp:</b> Machen Sie jetzt einen Screenshot der Schaubilder und fügen Sie ihn in Ihr Arbeitsblatt ein.</p>
     <p><b>Entdeckung:</b> Zwei Schaubilder gehören jeweils zu zwei Ausdrücken. Es gilt also (Regeln von De Morgan):</p>
     <p class="formel" style="border-left:10px solid #f47f7f;padding-left:10px"><span class="ov">A ∩ B</span> = <span class="ov">A</span> ∪ <span class="ov">B</span></p>
     <p class="formel" style="border-left:10px solid #0a7cf0;padding-left:10px"><span class="ov">A ∪ B</span> = <span class="ov">A</span> ∩ <span class="ov">B</span></p>
     <p>Erklären Sie Ihrer Nachbarin oder Ihrem Nachbarn beide Gleichungen in Worten.</p>
+  </section>
+
+  <section class="teil2" id="teil2" hidden>
+    <h2>Teil 2: Additionssatz</h2>
+    <p>Der Würfel ist fair, alle sechs Augenzahlen sind gleich wahrscheinlich.</p>
+    <div class="venn2" id="venn2"></div>
+
+    <h3>1. Wahrscheinlichkeiten bestimmen</h3>
+    <p>Zählen Sie im Mengenbild und tragen Sie jede Wahrscheinlichkeit als Bruch ein.</p>
+    <div id="zeilen"></div>
+
+    <div id="schritt2" hidden>
+      <h3>2. Was wird beim Addieren doppelt gezählt?</h3>
+      <p id="summe"></p>
+      <p>Beim Addieren von P(A) und P(B) werden manche Ergebnisse doppelt gezählt. Tippen Sie diese Augenzahlen an.</p>
+      <div class="elemente" id="elemente" role="group" aria-label="Augenzahlen"></div>
+      <button type="button" class="pruef" id="pruef2">Prüfen</button>
+      <p class="status" id="status2" aria-live="polite"></p>
+    </div>
+
+    <div id="schritt3" hidden>
+      <h3>3. Wie lautet der Additionssatz?</h3>
+      <p>Wie muss P(A) + P(B) verändert werden, damit P(A ∪ B) herauskommt? Wählen Sie das Rechenzeichen.</p>
+      <p class="formel">P(A ∪ B) = P(A) + P(B) <span class="opwahl" role="group" aria-label="Rechenzeichen"><button type="button" class="op" data-op="+" aria-label="Plus">+</button><button type="button" class="op" data-op="−" aria-label="Minus">−</button></span> P(A ∩ B)</p>
+      <p class="status" id="status3" aria-live="polite"></p>
+    </div>
+
+    <div class="satz" id="satz" hidden>
+      <h3>Additionssatz</h3>
+      <p>Für zwei beliebige Ereignisse A und B eines Zufallsexperiments gilt:</p>
+      <p class="formel">P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</p>
+      <p>Grund: Die Schnittfläche gehört zu A und zu B. Ohne den Abzug würde sie doppelt gezählt.</p>
+      <p>In der Wahrscheinlichkeitsrechnung bedeutet „oder“ immer „und/oder“.</p>
+      <p>Übertragen Sie den Satz in Ihr Arbeitsblatt.</p>
+    </div>
   </section>
 </main>
 <script>
@@ -77,6 +145,10 @@ const AUSDRUECKE = [
   { id: "nAvnB",html: o("A") + " ∪ " + o("B"),  wort: "Nicht A, vereinigt mit nicht B",      f: (a, b) => !a || !b },
   { id: "nAunB",html: o("A") + " ∩ " + o("B"),  wort: "Nicht A, geschnitten mit nicht B",    f: (a, b) => !a && !b }
 ];
+// Würfelbeispiel: A "kleiner als 4", B "ungerade". a bzw. b: Das Ergebnis liegt in A bzw. in B.
+const ELEMENTE = [1, 2, 3, 4, 5, 6].map(n => ({ n: n, a: n < 4, b: n % 2 === 1 }));
+// Lage der Augenzahlen im Mengenbild (Mittelpunkt)
+const POS = { 1: [105, 50], 2: [50, 65], 3: [105, 81], 4: [20, 114], 5: [160, 65], 6: [192, 18] };
 // Farben wie auf dem Arbeitsblatt. Ausdrücke mit derselben Menge teilen sich eine Farbe.
 // winkel: Richtung der Schraffur, rand: dicker farbiger Rand um die Menge selbst
 const FARBEN = {
@@ -101,9 +173,16 @@ const BEREICHE = [
 const muster = e => BEREICHE.map(r => e.f(r.a, r.b) ? "1" : "0").join("");
 const MUSTER = [...new Set(AUSDRUECKE.map(muster))];
 const stil = m => FARBEN[AUSDRUECKE.find(e => muster(e) === m).id];
+const mengeText = e => "{" + ELEMENTE.filter(x => e.f(x.a, x.b)).map(x => x.n).join("; ") + "}";
+
+const ELA = 'cx="78" cy="65" rx="55" ry="38"', ELB = 'cx="132" cy="65" rx="55" ry="38"';
+const beschriftung = '<g font-family="Cambria, serif" font-size="17" font-weight="700" fill="#14202e" stroke="#fff" stroke-width="3.5" paint-order="stroke">' +
+  '<text x="9" y="21">Ω</text><text x="34" y="33">A</text><text x="166" y="33">B</text></g>';
+const zahlen = '<g font-family="Cambria, serif" font-size="15" font-weight="700" text-anchor="middle" fill="#14202e" stroke="#fff" stroke-width="4.5" paint-order="stroke">' +
+  ELEMENTE.map(e => '<text x="' + POS[e.n][0] + '" y="' + (POS[e.n][1] + 5) + '">' + e.n + '</text>').join("") + '</g>';
 
 function svg(m, nr) {
-  const A = 'cx="78" cy="65" rx="55" ry="38"', B = 'cx="132" cy="65" rx="55" ry="38"';
+  const A = ELA, B = ELB;
   const st = stil(m), f = "url(#p" + nr + ")";
   const voll = '<rect width="210" height="130" fill="#fff"/>';
   let s = '<defs><pattern id="p' + nr + '" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(' + st.winkel + ')">' +
@@ -119,9 +198,17 @@ function svg(m, nr) {
   if (m[1] === "1") s += '<ellipse ' + B + ' fill="' + f + '" clip-path="url(#c' + nr + ')"/>';
   s += '<g fill="none" stroke="#14202e" stroke-width="1.6"><ellipse ' + A + '/><ellipse ' + B + '/><rect x="1" y="1" width="208" height="128"/></g>';
   if (st.rand) s += '<ellipse ' + (st.rand === "A" ? A : B) + ' fill="none" stroke="' + st.farbe + '" stroke-width="5"/>';
-  s += '<g font-family="Cambria, serif" font-size="17" font-weight="700" fill="#14202e" stroke="#fff" stroke-width="3.5" paint-order="stroke">' +
-    '<text x="9" y="21">Ω</text><text x="34" y="33">A</text><text x="166" y="33">B</text></g>';
+  s += beschriftung + zahlen;
   return '<svg viewBox="0 0 210 130" aria-hidden="true">' + s + '</svg>';
+}
+// Ungefärbtes Mengenbild für Teil 2. Ringe markieren angetippte Augenzahlen.
+function svgVenn() {
+  const ringe = ELEMENTE.map(e => '<circle class="ring" data-n="' + e.n + '" cx="' + POS[e.n][0] + '" cy="' + POS[e.n][1] + '" r="11" fill="none" stroke="#14202e" stroke-width="2.2" visibility="hidden"/>').join("");
+  return '<svg viewBox="0 0 210 130" role="img" aria-label="Mengenbild mit den Augenzahlen 1 bis 6. In A liegen 1, 2 und 3, in B liegen 1, 3 und 5.">' +
+    '<rect width="210" height="130" fill="#fff"/>' +
+    '<g fill="none" stroke="#14202e" stroke-width="1.6"><ellipse ' + ELA + '/><ellipse ' + ELB + '/><rect x="1" y="1" width="208" height="128"/></g>' +
+    '<ellipse ' + ELA + ' fill="none" stroke="#d00000" stroke-width="5"/><ellipse ' + ELB + ' fill="none" stroke="#007355" stroke-width="5"/>' +
+    beschriftung + zahlen + ringe + '</svg>';
 }
 const beschreibung = m => {
   const g = BEREICHE.filter((r, i) => m[i] === "1").map(r => r.name);
@@ -152,22 +239,25 @@ function zuordnen(m, bild) {
     const e = gewaehlt;
     geloest.add(e.id);
     const chip = document.createElement("span");
-    chip.className = "treffer"; chip.innerHTML = e.html;
+    chip.className = "treffer";
+    chip.innerHTML = '<span>' + e.html + '</span><span class="menge">= ' + mengeText(e) + '</span>';
     const farbe = FARBEN[e.id].farbe;
     chip.style.borderColor = farbe; chip.style.background = farbe + "26";
     bild.style.borderColor = farbe;
     bild.querySelector(".ablage").appendChild(chip);
     bild.classList.add("voll");
-    bild.setAttribute("aria-label", bild.getAttribute("aria-label") + ". Zugeordnet: " + e.wort);
+    bild.setAttribute("aria-label", bild.getAttribute("aria-label") + ". Zugeordnet: " + e.wort + " gleich " + mengeText(e));
     const karte = document.querySelector('.karte[data-id="' + e.id + '"]');
     karte.disabled = true; karte.setAttribute("aria-pressed", "false");
     gewaehlt = null;
     melden("Richtig: " + e.html + " passt zu diesem Schaubild.", "gut");
     if (geloest.size === AUSDRUECKE.length) {
-      melden("Geschafft! Weiter unten wartet noch eine Entdeckung.", "gut");
+      melden("Geschafft!", "gut");
       $("bilanz").textContent = fehler === 0 ? "Ohne einen einzigen Fehlversuch." : "Fehlversuche: " + fehler + ".";
       $("ende").hidden = false;
+      $("teil2").hidden = false;
       $("karten").hidden = true;
+      $("leiste").hidden = true;
     }
   } else {
     fehler++;
@@ -183,9 +273,111 @@ function zuordnen(m, bild) {
   stand();
 }
 
+/* ---------- Teil 2: Additionssatz ---------- */
+const N = ELEMENTE.length;
+const anzahl = f => ELEMENTE.filter(x => f(x.a, x.b)).length;
+const WS = [
+  { label: "P(A)",     k: anzahl((a, b) => a) },
+  { label: "P(B)",     k: anzahl((a, b) => b) },
+  { label: "P(A ∩ B)", k: anzahl((a, b) => a && b) },
+  { label: "P(A ∪ B)", k: anzahl((a, b) => a || b) }
+];
+const [kA, kB, kUND, kODER] = WS.map(w => w.k);
+const DOPPELT = ELEMENTE.filter(x => x.a && x.b).map(x => x.n);
+let wsFertig = 0, markiert = new Set();
+
+function rueck(id, text, art) { $(id).textContent = text; $(id).className = "status" + (art ? " " + art : ""); }
+
+function zeileBauen(w) {
+  const z = document.createElement("div");
+  z.className = "zeile";
+  z.innerHTML = '<span class="wl">' + w.label + ' =</span>' +
+    '<span class="bruch"><input type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Zähler von ' + w.label + '">' +
+    '<span class="strich"></span>' +
+    '<input type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Nenner von ' + w.label + '"></span>' +
+    '<button type="button" class="pruef">Prüfen</button><span class="rz" aria-live="polite"></span>';
+  const [zi, ni] = z.querySelectorAll("input"), knopf = z.querySelector("button"), rz = z.querySelector(".rz");
+  const set = (t, art) => { rz.textContent = t; rz.className = "rz" + (art ? " " + art : ""); };
+  const pruefen = () => {
+    const zs = zi.value.trim(), ns = ni.value.trim();
+    if (!/^\d+$/.test(zs) || !/^\d+$/.test(ns)) return set("Tragen Sie Zähler und Nenner als ganze Zahlen ein.", "falsch");
+    const Z = +zs, M = +ns;
+    if (M === 0) return set("Der Nenner darf nicht 0 sein.", "falsch");
+    if (Z > M) return set("Noch nicht. Eine Wahrscheinlichkeit kann nicht größer als 1 sein.", "falsch");
+    if (Z * N !== w.k * M) return set("Noch nicht. Zählen Sie im Mengenbild die Ergebnisse dieses Ereignisses und teilen Sie durch die Anzahl aller Ergebnisse.", "falsch");
+    zi.disabled = ni.disabled = knopf.disabled = true;
+    set("Richtig.", "gut");
+    if (++wsFertig === WS.length) {
+      $("summe").textContent = "P(A) + P(B) = " + kA + "/" + N + " + " + kB + "/" + N + " = " + (kA + kB) + "/" + N + ". Aber P(A ∪ B) = " + kODER + "/" + N + ".";
+      $("schritt2").hidden = false;
+    }
+  };
+  knopf.addEventListener("click", pruefen);
+  [zi, ni].forEach(i => i.addEventListener("keydown", ev => { if (ev.key === "Enter") pruefen(); }));
+  return z;
+}
+
+function elementKnopf(e) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "elem"; b.textContent = e.n;
+  b.setAttribute("aria-pressed", "false"); b.setAttribute("aria-label", "Augenzahl " + e.n);
+  b.addEventListener("click", () => {
+    if (markiert.has(e.n)) markiert.delete(e.n); else markiert.add(e.n);
+    b.setAttribute("aria-pressed", String(markiert.has(e.n)));
+    const ring = document.querySelector('.ring[data-n="' + e.n + '"]');
+    if (ring) ring.setAttribute("visibility", markiert.has(e.n) ? "visible" : "hidden");
+  });
+  return b;
+}
+
+function teil2Neu() {
+  wsFertig = 0; markiert = new Set();
+  $("venn2").innerHTML = svgVenn();
+  $("zeilen").innerHTML = "";
+  WS.forEach(w => $("zeilen").appendChild(zeileBauen(w)));
+  $("elemente").innerHTML = "";
+  ELEMENTE.forEach(e => $("elemente").appendChild(elementKnopf(e)));
+  $("pruef2").disabled = false;
+  document.querySelectorAll(".op").forEach(b => { b.disabled = false; b.classList.remove("gewaehlt"); b.setAttribute("aria-pressed", "false"); });
+  rueck("status2", ""); rueck("status3", "");
+  ["schritt2", "schritt3", "satz", "teil2"].forEach(id => { $(id).hidden = true; });
+}
+
+$("pruef2").addEventListener("click", () => {
+  if (markiert.size === 0) return rueck("status2", "Tippen Sie mindestens eine Augenzahl an.", "falsch");
+  const zuViel = [...markiert].some(n => !DOPPELT.includes(n));
+  const zuWenig = DOPPELT.some(n => !markiert.has(n));
+  if (zuViel || zuWenig) {
+    const tipp = zuViel && zuWenig ? "Mindestens eine gewählte Zahl gehört nicht dazu und mindestens eine fehlt."
+      : zuViel ? "Mindestens eine gewählte Zahl wird nur einmal gezählt."
+      : "Es fehlt noch mindestens eine doppelt gezählte Augenzahl.";
+    return rueck("status2", "Noch nicht. " + tipp + " Doppelt gezählt wird ein Ergebnis, das in A und in B liegt.", "falsch");
+  }
+  document.querySelectorAll(".elem").forEach(b => { b.disabled = true; });
+  $("pruef2").disabled = true;
+  rueck("status2", "Richtig: Die Augenzahlen " + DOPPELT.join(" und ") + " liegen in A und in B. Sie stecken in P(A) und in P(B) und werden darum doppelt gezählt.", "gut");
+  $("schritt3").hidden = false;
+});
+
+document.querySelectorAll(".op").forEach(b => b.addEventListener("click", () => {
+  const plus = b.dataset.op === "+";
+  const s = plus ? kA + kB + kUND : kA + kB - kUND;
+  const probe = "Probe: " + kA + "/" + N + " + " + kB + "/" + N + " " + b.dataset.op + " " + kUND + "/" + N + " = " + s + "/" + N + ".";
+  if (s === kODER) {
+    document.querySelectorAll(".op").forEach(x => { x.disabled = true; x.setAttribute("aria-pressed", String(x === b)); });
+    b.classList.add("gewaehlt");
+    rueck("status3", "Richtig. " + probe + " Das stimmt mit P(A ∪ B) = " + kODER + "/" + N + " überein.", "gut");
+    $("satz").hidden = false;
+  } else {
+    rueck("status3", "Noch nicht. " + probe + " Das stimmt nicht mit P(A ∪ B) = " + kODER + "/" + N + " überein." +
+      (s > N ? " Das Ergebnis ist sogar größer als 1." : "") +
+      " Die doppelt gezählten Ergebnisse würden bei diesem Rechenzeichen " + (plus ? "dreimal" : "gar nicht") + " gezählt.", "falsch");
+  }
+}));
+
 function start() {
   gewaehlt = null; geloest = new Set(); fehler = 0;
-  $("karten").innerHTML = ""; $("bilder").innerHTML = ""; $("ende").hidden = true; $("karten").hidden = false;
+  $("karten").innerHTML = ""; $("bilder").innerHTML = ""; $("ende").hidden = true; $("karten").hidden = false; $("leiste").hidden = false;
   mischen(AUSDRUECKE).forEach(e => {
     const k = document.createElement("button");
     k.type = "button"; k.className = "karte"; k.dataset.id = e.id; k.innerHTML = e.html;
@@ -201,6 +393,7 @@ function start() {
     b.addEventListener("click", () => zuordnen(m, b));
     $("bilder").appendChild(b);
   });
+  teil2Neu();
   melden("Wählen Sie einen Ausdruck."); stand();
 }
 $("neu").addEventListener("click", () => { start(); window.scrollTo(0, 0); });
