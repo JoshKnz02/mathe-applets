@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Verknüpfungen zuordnen</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f4f6f9; color: #14202e; font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main, .leiste > div { max-width: 900px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 14px; }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  header p { margin: 4px 0; }
+  .leiste { position: sticky; top: 0; z-index: 2; background: #f4f6f9; border-bottom: 1px solid #cfd8e3; padding: 8px 0; }
+  .karten[hidden] { display: none; }
+  .karten { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .karte { font: 600 1.05rem/1.2 Cambria, "Times New Roman", serif; min-height: 46px; padding: 6px 2px; background: #fff; color: inherit; border: 2px solid #9fb2ca; border-radius: 8px; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .karte[aria-pressed="true"] { background: #0b57a4; border-color: #0b57a4; color: #fff; }
+  .karte:disabled { visibility: hidden; }
+  .ov { display: inline-block; border-top: 1.6px solid currentColor; line-height: 1.05; padding-top: 1px; margin-top: 1px; }
+  .ov .ov { margin: 0 0 1px; }
+  .status { margin: 8px 0 0; min-height: 2.8em; font-size: .93rem; }
+  .status.gut { color: #0a6b3d; font-weight: 600; }
+  .status.falsch { color: #a33a00; font-weight: 600; }
+  .bilder { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+  @media (min-width: 640px) { .bilder { grid-template-columns: repeat(4, 1fr); } }
+  .bild { display: flex; flex-direction: column; align-items: stretch; background: #fff; border: 2px solid #cfd8e3; border-radius: 10px; padding: 6px; font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+  .bild svg { width: 100%; height: auto; display: block; }
+  .bild.nein { outline: 4px dashed #14202e; outline-offset: -2px; }
+  .ablage { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 34px; margin-top: 5px; }
+  .treffer { font: 600 1rem/1.2 Cambria, "Times New Roman", serif; border: 3px solid; border-radius: 6px; padding: 3px 7px; white-space: nowrap; }
+  button:focus-visible { outline: 3px solid #e69f00; outline-offset: 2px; }
+  .fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 14px 0; }
+  .neu { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid #0b57a4; background: #fff; color: #0b57a4; cursor: pointer; }
+  .ende { background: #fff; border: 2px solid #0a6b3d; border-radius: 10px; padding: 12px 14px; margin-bottom: 24px; }
+  .ende h2 { font-size: 1.1rem; margin: 0 0 6px; }
+  .formel { font: 600 1.15rem/2 Cambria, "Times New Roman", serif; margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Verknüpfungen von Ereignissen</h1>
+    <p>Tippen Sie zuerst einen <b>Ausdruck</b> an, dann das passende <b>Schaubild</b>. Zu manchen Schaubildern passt mehr als ein Ausdruck.</p>
+  </header>
+</main>
+<div class="leiste"><div>
+  <div class="karten" id="karten" role="group" aria-label="Ausdrücke"></div>
+  <p class="status" id="status" aria-live="polite"></p>
+</div></div>
+<main>
+  <div class="bilder" id="bilder"></div>
+  <div class="fuss"><span id="stand"></span><button type="button" class="neu" id="neu">Neu starten</button></div>
+  <section class="ende" id="ende" hidden>
+    <h2>Alles richtig zugeordnet</h2>
+    <p id="bilanz"></p>
+    <p><b>Entdeckung:</b> Zwei Schaubilder gehören jeweils zu zwei Ausdrücken. Es gilt also (Regeln von De Morgan):</p>
+    <p class="formel" style="border-left:10px solid #f47f7f;padding-left:10px"><span class="ov">A ∩ B</span> = <span class="ov">A</span> ∪ <span class="ov">B</span></p>
+    <p class="formel" style="border-left:10px solid #0a7cf0;padding-left:10px"><span class="ov">A ∪ B</span> = <span class="ov">A</span> ∩ <span class="ov">B</span></p>
+    <p>Erklären Sie Ihrer Nachbarin oder Ihrem Nachbarn beide Gleichungen in Worten.</p>
+  </section>
+</main>
+<script>
+"use strict";
+const o = t => '<span class="ov">' + t + '</span>';
+// f(a, b): Gehört ein Ergebnis zur Menge, wenn es in A (a) bzw. in B (b) liegt?
+const AUSDRUECKE = [
+  { id: "A",    html: "A",                      wort: "A",                                   f: (a, b) => a },
+  { id: "B",    html: "B",                      wort: "B",                                   f: (a, b) => b },
+  { id: "nA",   html: o("A"),                   wort: "Gegenereignis von A",                 f: (a, b) => !a },
+  { id: "nB",   html: o("B"),                   wort: "Gegenereignis von B",                 f: (a, b) => !b },
+  { id: "UND",  html: "A ∩ B",                  wort: "A geschnitten B",                     f: (a, b) => a && b },
+  { id: "ODER", html: "A ∪ B",                  wort: "A vereinigt B",                       f: (a, b) => a || b },
+  { id: "nUND", html: o("A ∩ B"),               wort: "Gegenereignis von A geschnitten B",   f: (a, b) => !(a && b) },
+  { id: "nODER",html: o("A ∪ B"),               wort: "Gegenereignis von A vereinigt B",     f: (a, b) => !(a || b) },
+  { id: "nAvnB",html: o("A") + " ∪ " + o("B"),  wort: "Nicht A, vereinigt mit nicht B",      f: (a, b) => !a || !b },
+  { id: "nAunB",html: o("A") + " ∩ " + o("B"),  wort: "Nicht A, geschnitten mit nicht B",    f: (a, b) => !a && !b }
+];
+// Farben wie auf dem Arbeitsblatt. Ausdrücke mit derselben Menge teilen sich eine Farbe.
+// winkel: Richtung der Schraffur, rand: dicker farbiger Rand um die Menge selbst
+const FARBEN = {
+  A:     { farbe: "#d00000", winkel: 45,  rand: "A" },
+  B:     { farbe: "#007355", winkel: -45, rand: "B" },
+  nA:    { farbe: "#ee9a12", winkel: 55 },
+  nB:    { farbe: "#0a7cf0", winkel: -35 },
+  UND:   { farbe: "#7d1590", winkel: 75 },
+  ODER:  { farbe: "#858b92", winkel: 55 },
+  nUND:  { farbe: "#f47f7f", winkel: 55 },
+  nODER: { farbe: "#0a7cf0", winkel: 55 }
+};
+FARBEN.nAvnB = FARBEN.nUND;
+FARBEN.nAunB = FARBEN.nODER;
+// Die vier Bereiche des Mengenbildes
+const BEREICHE = [
+  { a: true,  b: false, name: "nur A" },
+  { a: true,  b: true,  name: "Schnittfläche" },
+  { a: false, b: true,  name: "nur B" },
+  { a: false, b: false, name: "außerhalb beider Mengen" }
+];
+const muster = e => BEREICHE.map(r => e.f(r.a, r.b) ? "1" : "0").join("");
+const MUSTER = [...new Set(AUSDRUECKE.map(muster))];
+const stil = m => FARBEN[AUSDRUECKE.find(e => muster(e) === m).id];
+
+function svg(m, nr) {
+  const A = 'cx="78" cy="65" rx="55" ry="38"', B = 'cx="132" cy="65" rx="55" ry="38"';
+  const st = stil(m), f = "url(#p" + nr + ")";
+  const voll = '<rect width="210" height="130" fill="#fff"/>';
+  let s = '<defs><pattern id="p' + nr + '" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(' + st.winkel + ')">' +
+    '<rect width="11" height="11" fill="' + st.farbe + '" fill-opacity=".22"/><rect width="4" height="11" fill="' + st.farbe + '"/></pattern>' +
+    '<clipPath id="c' + nr + '"><ellipse ' + A + '/></clipPath>' +
+    '<mask id="a' + nr + '">' + voll + '<ellipse ' + A + ' fill="#000"/></mask>' +
+    '<mask id="b' + nr + '">' + voll + '<ellipse ' + B + ' fill="#000"/></mask>' +
+    '<mask id="n' + nr + '">' + voll + '<ellipse ' + A + ' fill="#000"/><ellipse ' + B + ' fill="#000"/></mask></defs>';
+  s += '<rect width="210" height="130" fill="#fff"/>';
+  if (m[3] === "1") s += '<rect width="210" height="130" fill="' + f + '" mask="url(#n' + nr + ')"/>';
+  if (m[0] === "1") s += '<ellipse ' + A + ' fill="' + f + '" mask="url(#b' + nr + ')"/>';
+  if (m[2] === "1") s += '<ellipse ' + B + ' fill="' + f + '" mask="url(#a' + nr + ')"/>';
+  if (m[1] === "1") s += '<ellipse ' + B + ' fill="' + f + '" clip-path="url(#c' + nr + ')"/>';
+  s += '<g fill="none" stroke="#14202e" stroke-width="1.6"><ellipse ' + A + '/><ellipse ' + B + '/><rect x="1" y="1" width="208" height="128"/></g>';
+  if (st.rand) s += '<ellipse ' + (st.rand === "A" ? A : B) + ' fill="none" stroke="' + st.farbe + '" stroke-width="5"/>';
+  s += '<g font-family="Cambria, serif" font-size="17" font-weight="700" fill="#14202e" stroke="#fff" stroke-width="3.5" paint-order="stroke">' +
+    '<text x="9" y="21">Ω</text><text x="34" y="33">A</text><text x="166" y="33">B</text></g>';
+  return '<svg viewBox="0 0 210 130" aria-hidden="true">' + s + '</svg>';
+}
+const beschreibung = m => {
+  const g = BEREICHE.filter((r, i) => m[i] === "1").map(r => r.name);
+  return "Gefärbt: " + g.join(", ");
+};
+const mischen = list => {
+  const x = list.slice();
+  for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; }
+  return x;
+};
+
+const $ = id => document.getElementById(id);
+let gewaehlt = null, geloest = new Set(), fehler = 0;
+
+function melden(text, art) { $("status").innerHTML = text; $("status").className = "status" + (art ? " " + art : ""); }
+function stand() { $("stand").textContent = geloest.size + " von " + AUSDRUECKE.length + " zugeordnet · Fehlversuche: " + fehler; }
+
+function waehlen(e, knopf) {
+  gewaehlt = gewaehlt === e ? null : e;
+  document.querySelectorAll(".karte").forEach(k => k.setAttribute("aria-pressed", String(k === knopf && gewaehlt === e)));
+  melden(gewaehlt ? "Gewählt: " + e.html + ". Tippen Sie jetzt auf das passende Schaubild." : "Wählen Sie einen Ausdruck.");
+}
+
+function zuordnen(m, bild) {
+  if (!gewaehlt) { melden("Wählen Sie zuerst oben einen Ausdruck aus.", "falsch"); return; }
+  const soll = muster(gewaehlt);
+  if (soll === m) {
+    const e = gewaehlt;
+    geloest.add(e.id);
+    const chip = document.createElement("span");
+    chip.className = "treffer"; chip.innerHTML = e.html;
+    const farbe = FARBEN[e.id].farbe;
+    chip.style.borderColor = farbe; chip.style.background = farbe + "26";
+    bild.style.borderColor = farbe;
+    bild.querySelector(".ablage").appendChild(chip);
+    bild.classList.add("voll");
+    bild.setAttribute("aria-label", bild.getAttribute("aria-label") + ". Zugeordnet: " + e.wort);
+    const karte = document.querySelector('.karte[data-id="' + e.id + '"]');
+    karte.disabled = true; karte.setAttribute("aria-pressed", "false");
+    gewaehlt = null;
+    melden("Richtig: " + e.html + " passt zu diesem Schaubild.", "gut");
+    if (geloest.size === AUSDRUECKE.length) {
+      melden("Geschafft! Weiter unten wartet noch eine Entdeckung.", "gut");
+      $("bilanz").textContent = fehler === 0 ? "Ohne einen einzigen Fehlversuch." : "Fehlversuche: " + fehler + ".";
+      $("ende").hidden = false;
+      $("karten").hidden = true;
+    }
+  } else {
+    fehler++;
+    const zuViel = BEREICHE.some((r, i) => m[i] === "1" && soll[i] === "0");
+    const zuWenig = BEREICHE.some((r, i) => m[i] === "0" && soll[i] === "1");
+    const tipp = zuViel && zuWenig ? "Hier ist etwas gefärbt, das nicht dazugehört, und etwas Nötiges fehlt."
+      : zuViel ? "Hier ist mehr gefärbt, als dazugehört."
+      : "Hier fehlt noch ein Teil.";
+    melden("Noch nicht. " + tipp, "falsch");
+    bild.classList.add("nein");
+    setTimeout(() => bild.classList.remove("nein"), 900);
+  }
+  stand();
+}
+
+function start() {
+  gewaehlt = null; geloest = new Set(); fehler = 0;
+  $("karten").innerHTML = ""; $("bilder").innerHTML = ""; $("ende").hidden = true; $("karten").hidden = false;
+  mischen(AUSDRUECKE).forEach(e => {
+    const k = document.createElement("button");
+    k.type = "button"; k.className = "karte"; k.dataset.id = e.id; k.innerHTML = e.html;
+    k.setAttribute("aria-label", e.wort); k.setAttribute("aria-pressed", "false");
+    k.addEventListener("click", () => waehlen(e, k));
+    $("karten").appendChild(k);
+  });
+  mischen(MUSTER).forEach((m, nr) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "bild"; b.dataset.muster = m;
+    b.innerHTML = svg(m, nr) + '<span class="ablage"></span>';
+    b.setAttribute("aria-label", "Schaubild " + (nr + 1) + ". " + beschreibung(m));
+    b.addEventListener("click", () => zuordnen(m, b));
+    $("bilder").appendChild(b);
+  });
+  melden("Wählen Sie einen Ausdruck."); stand();
+}
+$("neu").addEventListener("click", () => { start(); window.scrollTo(0, 0); });
+start();
+</script>
+</body>
+</html>
