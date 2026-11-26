@@ -6,8 +6,12 @@ Die Regeln für die Zusammenarbeit stehen in [CLAUDE.md](CLAUDE.md).
 
 ## Applets
 
-Noch keine Applets vorhanden. Sie werden nach Themen gruppiert, je Applet mit Titel, einem Satz zum Einsatz und dem vollständigen Link.
+### Stochastik
 
-Aufbau der Links:
+**Verknüpfungen von Ereignissen und Additionssatz**
+Zuordnung von Ausdrücken zu Mengenbildern am Würfelbeispiel, danach Herleitung des Additionssatzes; Einsatz in der Stunde zu Verknüpfungen von Ereignissen.
+https://joshknz02.github.io/mathe-applets/stochastik/verknuepfungen/
+
+## Aufbau der Links
 
     https://joshknz02.github.io/mathe-applets/<thema>/<applet>/
